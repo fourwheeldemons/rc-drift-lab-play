@@ -108,6 +108,7 @@ kbd{display:inline-block;min-width:26px;padding:2px 7px;margin-right:8px;border:
 
 @media (max-width:700px){#hBL,#hCam{display:none}#hAng{font-size:40px}.chips.grid{grid-template-columns:1fr 1fr}}
 .lb{display:grid;gap:2px;margin:6px 0 10px}.lbr{display:grid;grid-template-columns:3em 1fr auto;gap:8px;padding:6px 8px;background:rgba(255,255,255,.04);font-variant-numeric:tabular-nums}.lbr.me{background:rgba(255,106,31,.22)}.lbn{opacity:.6}.lbp{font-weight:700}
+.venmo{display:block;text-align:center;text-decoration:none;background:#008cff;color:#fff;border:0;font-weight:700}.venmo:hover{background:#1a9bff}.venmoLink{color:#4fb2ff;text-decoration:underline}
 </style>
 </head>
 <body class="inmenu">
@@ -3128,14 +3129,16 @@ const ONLINE = (() => {
     draw();
   }
   function maybeTour() { let seen = false; try { seen = localStorage.getItem('rcdl_tour') === '1'; } catch (e) { } if (!seen) setTimeout(() => tour(0), 600); }
-  function renderPanel() { renderPanel0(); const cr = el('div', 'credit'); cr.innerHTML = 'RC Drift Lab · made by <b>Stranger Kreations</b>'; panel.appendChild(cr); }
+  const venmoBtn = (txt, cls) => { const a = el('a', cls || 'ghost venmo', txt || 'Chip in on Venmo · @' + VENMO); a.href = 'https://venmo.com/u/' + VENMO; a.target = '_blank'; a.rel = 'noopener'; return a; };
+  function renderPanel() { renderPanel0(); const cr = el('div', 'credit'); cr.innerHTML = 'RC Drift Lab · made by <b>Stranger Kreations</b> · free to play'; if (VENMO) { cr.appendChild(document.createTextNode(' · ')); const a = venmoBtn('chip in on Venmo', 'venmoLink'); cr.appendChild(a); } panel.appendChild(cr); }
   function renderPanel0() {
     panel.textContent = ''; const add = n => panel.appendChild(n), h = t => add(el('h3', '', t));
     if (tab === 'drive') {
-      if (mode === 'pause') { const b = el('button', 'big', 'RESUME'); b.onclick = () => drive(false); add(b); const b2 = el('button', 'ghost', 'Restart session'); b2.onclick = () => drive(true); add(b2); const b3 = el('button', 'ghost', 'Back to main menu'); b3.onclick = () => { newSession(); openMenu('main', 'drive'); }; add(b3); }
+      if (mode === 'pause') { const b = el('button', 'big', 'RESUME'); b.onclick = () => drive(false); add(b); const b2 = el('button', 'ghost', 'Restart session'); b2.onclick = () => drive(true); add(b2); const b3 = el('button', 'ghost', 'Back to main menu'); b3.onclick = () => { newSession(); openMenu('main', 'drive'); }; add(b3); if (VENMO) add(venmoBtn('Enjoying it? Chip in on Venmo · @' + VENMO)); }
       else { const b = el('button', 'big', 'DRIVE'); b.onclick = () => { if (isTouchDev()) goFull(); drive(true); }; add(b);
         if (isTouchDev()) { const fb = el('button', 'ghost', 'Fullscreen'); fb.onclick = goFull; add(fb); add(el('p', 'tip', 'Phone controls: put your left thumb down anywhere on the left half and slide sideways to steer. Right thumb anywhere on the right half: slide up for throttle, down for brake. Hold the throttle thumb part-way to keep wheel speed through a corner.')); } add(el('p', 'tip', 'Initiate like the real thing: flick away from the corner then turn in (feint), or lift and turn in, or stab the brake. Once it is sideways, throttle sets the angle and the gyro catches the countersteer. Less throttle = less angle.')); }
       { const tb = el('button', 'ghost', 'How to play / save to home screen'); tb.onclick = () => tour(1); add(tb); }
+      if (VENMO && mode !== 'pause') { add(venmoBtn()); add(el('p', 'tip', 'RC Drift Lab is free and always will be. Servers aren\'t — if you want to help keep it running, any amount helps.')); }
       { h('Driver'); const ni = el('input'); ni.type = 'text'; ni.maxLength = 16; ni.value = S.opt.name; ni.placeholder = 'Your driver name'; ni.oninput = () => { S.opt.name = ni.value.trim() || 'Driver'; save(); if (player) player.name = S.opt.name; }; add(row('Driver name', ni, 'Shows on your PB share line and online.'));
         const d0 = SIM.TRACK_DEFS[S.opt.track], pb = (S.pb || {})[d0.id];
         if (pb) { const line = S.opt.name + ' · ' + d0.name + ' · ' + pb.toLocaleString() + ' pts lap PB · RC Drift Lab by Stranger Kreations'; const sb = el('button', 'ghost', 'Share my ' + d0.name + ' PB (' + pb.toLocaleString() + ')');
@@ -3243,7 +3246,7 @@ const ONLINE = (() => {
       const d0 = SIM.TRACK_DEFS[S.opt.track]; h('Leaderboard · ' + d0.name); const lbBox = el('div', 'lb'); lbBox.textContent = 'Loading…'; add(lbBox);
       O.leaderboard(d0.id, 25).then(rows => { lbBox.textContent = ''; if (!rows.length) { lbBox.textContent = 'No laps yet. Be the first.'; return; }
         for (const r of rows) { const line = el('div', 'lbr' + (O.user && r.user_id === O.user.id ? ' me' : '')); line.appendChild(el('span', 'lbn', '#' + r.rank)); line.appendChild(el('span', 'lbd', String(r.driver_name))); line.appendChild(el('span', 'lbp', Number(r.pts).toLocaleString())); lbBox.appendChild(line); } });
-      if (VENMO) { h('Support the game'); msg('RC Drift Lab is free. Servers aren’t. If you want to chip in, it helps keep the lights on.'); const a = el('a', 'big', 'Chip in on Venmo'); a.href = 'https://venmo.com/u/' + VENMO; a.target = '_blank'; a.rel = 'noopener'; a.style.display = 'block'; a.style.textAlign = 'center'; add(a); }
+      if (VENMO) { h('Support the game'); msg('RC Drift Lab is free. Servers aren’t. If you want to chip in, it helps keep the lights on.'); add(venmoBtn('Chip in on Venmo · @' + VENMO, 'big venmo')); }
     }
   }
   setInterval(() => { const s = document.getElementById('padStat'); if (!s) return; s.textContent = padInfo && padInfo.blocked ? 'This page is not allowed to read controllers here. Use the downloaded file version instead.' : padInfo ? 'Connected: ' + padInfo.id.slice(0, 48) + '  ·  axes ' + padInfo.axes.map(v => v.toFixed(2)).join('  ') : 'No controller seen yet. Plug it in and press any button on it. (Browsers only reveal a controller after a button press.)'; }, 200);
